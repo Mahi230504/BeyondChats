@@ -17,12 +17,18 @@ def get_user_data(username):
             "profile_img": redditor.icon_img if hasattr(redditor, 'icon_img') else None,
             "comments": [],
             "submissions": [],
+            "posts_per_week": {"comments": 0, "submissions": 0},
+            "top_comments": [],
+            "top_submissions": [],
         }
+
+        all_comments = []
+        all_submissions = []
 
         # Fetch comments
         try:
             for comment in redditor.comments.new(limit=100):
-                data["comments"].append(
+                all_comments.append(
                     {
                         "body": comment.body,
                         "score": comment.score,
@@ -36,7 +42,7 @@ def get_user_data(username):
         # Fetch submissions
         try:
             for submission in redditor.submissions.new(limit=100):
-                data["submissions"].append(
+                all_submissions.append(
                     {
                         "title": submission.title,
                         "score": submission.score,
@@ -48,6 +54,31 @@ def get_user_data(username):
                 )
         except Exception as e:
             print(f"Error fetching submissions for u/{username}: {e}")
+
+        data["comments"] = all_comments
+        data["submissions"] = all_submissions
+
+        # Calculate posts per week
+        import time
+        current_time = time.time()
+
+        if all_comments:
+            oldest_comment_time = min([c["created_utc"] for c in all_comments])
+            time_span_seconds = current_time - oldest_comment_time
+            time_span_weeks = time_span_seconds / (7 * 24 * 3600)
+            if time_span_weeks > 0:
+                data["posts_per_week"]["comments"] = len(all_comments) / time_span_weeks
+
+        if all_submissions:
+            oldest_submission_time = min([s["created_utc"] for s in all_submissions])
+            time_span_seconds = current_time - oldest_submission_time
+            time_span_weeks = time_span_seconds / (7 * 24 * 3600)
+            if time_span_weeks > 0:
+                data["posts_per_week"]["submissions"] = len(all_submissions) / time_span_weeks
+
+        # Get top comments and submissions
+        data["top_comments"] = sorted(all_comments, key=lambda x: x["score"], reverse=True)[:3]
+        data["top_submissions"] = sorted(all_submissions, key=lambda x: x["score"], reverse=True)[:3]
 
         return data
 

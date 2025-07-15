@@ -32,6 +32,10 @@ def generate_persona(user_data):
         username=user_data['username'],
         comment_karma=user_data['comment_karma'],
         link_karma=user_data['link_karma'],
+        posts_per_week_comments=user_data.get('posts_per_week', {}).get('comments', 0),
+        posts_per_week_submissions=user_data.get('posts_per_week', {}).get('submissions', 0),
+        top_comments=user_data.get('top_comments', []),
+        top_submissions=user_data.get('top_submissions', []),
         comments=user_data['comments'],
         submissions=user_data['submissions']
     )

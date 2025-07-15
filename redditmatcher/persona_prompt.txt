@@ -14,6 +14,10 @@ Based on the following Reddit user data, create a detailed user persona in JSON 
 - sentiment_tone: (summary of their typical sentiment/tone)
 - comment_karma: (from user_data)
 - link_karma: (from user_data)
+- posts_per_week_comments: (average comments per week)
+- posts_per_week_submissions: (average submissions per week)
+- top_comments: (array of top 3 comments by score, with body, score, and subreddit, as a JSON array of strings)
+- top_submissions: (array of top 3 submissions by score, with title, score, and subreddit, as a JSON array of strings)
 
 Ensure that for 'personality_traits', 'motivations', 'behaviour_habits', 'frustrations', and 'goals_needs', you provide 1-3 *short, direct quotes* from the user's comments or submissions in the 'citations' array that directly support the description. If no direct quote is available, provide an empty array for citations.
 
@@ -21,5 +25,9 @@ User Data:
 - Username: {username}
 - Comment Karma: {comment_karma}
 - Link Karma: {link_karma}
+- Posts per week (comments): {posts_per_week_comments:.2f}
+- Posts per week (submissions): {posts_per_week_submissions:.2f}
+- Top 3 Comments: {top_comments}
+- Top 3 Submissions: {top_submissions}
 - Most recent 100 comments: {comments}
 - Most recent 100 submissions: {submissions}

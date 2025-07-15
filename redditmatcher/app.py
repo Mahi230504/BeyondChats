@@ -112,9 +112,12 @@ st.markdown("""
         margin-bottom: 10px;
     }
     .info-table td {
-        padding: 4px 8px;
+        padding: 0;
         font-size: 1.02rem;
         border-bottom: 1px solid #f8b50022;
+    }
+    .info-table strong {
+        margin-right: 5px;
     }
     .info-table tr:last-child td {
         border-bottom: none;
@@ -176,81 +179,94 @@ if st.button("Generate Persona"):
                     st.error(f"Error generating persona: {persona['error']}")
                 elif persona:
                     # --- Persona Header Card ---
-                    st.markdown(f"""
-                        <div class="persona-header">
-                            <div style="display:flex; align-items:flex-start; gap: 40px;">
-                                <div style="flex:1;">
-                                    <h2 style="margin-bottom:0;">{persona.get('name', username)}</h2>
-                                    <table class="info-table">
-                                        <tr><td><strong>Age</strong></td><td>{persona.get('age', 'N/A')}</td></tr>
-                                        <tr><td><strong>Occupation</strong></td><td>{persona.get('occupation', 'N/A')}</td></tr>
-                                        <tr><td><strong>Status</strong></td><td>{persona.get('status', 'N/A')}</td></tr>
-                                        <tr><td><strong>Location</strong></td><td>{persona.get('location', 'N/A')}</td></tr>
-                                        <tr><td><strong>Comment Karma</strong></td><td>{persona.get('comment_karma', 'N/A')}</td></tr>
-                                        <tr><td><strong>Link Karma</strong></td><td>{persona.get('link_karma', 'N/A')}</td></tr>
-                                    </table>
-                                </div>
-                                <div style="flex-shrink: 0;">
-                                    {f'<img src="{persona.get('profile_picture', user_data.get('profile_img', ''))}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid #f8b500;" />' if persona.get('profile_picture') or user_data.get('profile_img') else ''}
-                                </div>
-                            </div>
-                            {f'<div class="persona-quote">"{persona["summary_quote"]}"</div>' if persona.get('summary_quote') else ''}
-                            <div style="display:flex; justify-content:space-around; margin-top: 30px;">
-                                <div style="flex:1; padding-right: 10px;">
-                                    <div class="section-title" style="color: black;">Motivations</div>
-                                    <div style="text-align:left; padding-left:10px;">
-                                    {''.join([
-                                            f'<div class="degree-display-group">' +
-                                            f'<span class="motivation-badge">{item.get("motivation", "")}</span>' +
-                                            f'<span class="degree-label-side">1</span>' +
-                                            f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>' +
-                                            f'<span class="degree-label-side">10</span>' +
-                                            f'</div>' +
-                                            (''.join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '')
-                                            for item in persona.get("motivations", [])
-                                        ])}
-                                    </div>
-                                </div>
-                                <div style="flex:1; padding-left: 10px;">
-                                    <div class="section-title" style="color: black;">Personality Traits</div>
-                                    <div style="text-align:left; padding-left:10px;">
-                                    {''.join([
-                                            f'<div class="degree-display-group">' +
-                                            f'<span class="trait-badge">{item.get("trait", "")}</span>' +
-                                            f'<span class="degree-label-side">1</span>' +
-                                            f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>' +
-                                            f'<span class="degree-label-side">10</span>' +
-                                            f'</div>' +
-                                            (''.join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '')
-                                            for item in persona.get("personality_traits", [])
-                                        ])}
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display:flex; justify-content:space-around; margin-top: 30px;">
-                                <div style="flex:1; padding-right: 10px;">
-                                    <div class="section-title" style="color: black;">Active Subreddits</div>
-                                    {''.join([f'<span class="subreddit-pill">r/{sr}</span>' for sr in persona.get("subreddits_active", [])])}
-                                </div>
-                                <div style="flex:1; padding-left: 10px;">
-                                    <div class="section-title" style="color: black;">Sentiment & Tone</div>
-                                    <span class="sentiment-pill">{persona.get("sentiment_tone", "N/A")}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="section-divider">
-                    """, unsafe_allow_html=True)
+                    st.markdown(
+                        (
+                            '<div class="persona-header">'
+                            f'<h2 style="margin-bottom:10px;">{persona.get("name", username)}</h2>'
+                            '<div style="display:flex; align-items:flex-start; gap: 40px;">'
+                                '<div style="flex-shrink: 0;">'
+                                    f'{f"""<img src="{persona.get("profile_picture", user_data.get("profile_img", ""))}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid #f8b500;" />""" if persona.get("profile_picture") or user_data.get("profile_img") else ""}'
+                                '</div>'
+                                '<div style="flex:1; padding-top: 30px;">'
+                                    '<table class="info-table">'
+                                        f'<tr><td><strong>Age</strong></td><td>{persona.get("age", "N/A")}</td></tr>'
+                                        f'<tr><td><strong>Occupation</strong></td><td>{persona.get("occupation", "N/A")}</td></tr>'
+                                        f'<tr><td><strong>Status</strong></td><td>{persona.get("status", "N/A")}</td></tr>'
+                                        f'<tr><td><strong>Location</strong></td><td>{persona.get("location", "N/A")}</td></tr>'
+                                        f'<tr><td><strong>Comment Karma</strong></td><td>{persona.get("comment_karma", "N/A")}</td></tr>'
+                                        f'<tr><td><strong>Link Karma</strong></td><td>{persona.get("link_karma", "N/A")}</td></tr>'
+                                    '</table>'
+                                '</div>'
+                            '</div>'
+                            f'{f"""<div class="persona-quote">"{persona["summary_quote"]}"</div>""" if persona.get("summary_quote") else ""}'
+                            '<div style="display:flex; justify-content:space-around; margin-top: 30px;">'
+                                '<div style="flex:1; padding-right: 10px;">'
+                                    '<div class="section-title" style="color: black;">Motivations</div>'
+                                    '<div style="text-align:left; padding-left:10px;">'
+                                    + ''.join([
+                                        '<div class="degree-display-group">'
+                                        f'<span class="motivation-badge">{item.get("motivation", "")}</span>'
+                                        '<span class="degree-label-side">1</span>'
+                                        f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>'
+                                        '<span class="degree-label-side">10</span>'
+                                        '</div>'
+                                        + (
+                                            ''.join([
+                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>'
+                                                for citation in item.get("citations", [])
+                                            ]) if item.get("citations") else ''
+                                        )
+                                        for item in persona.get("motivations", [])
+                                    ])
+                                    + '</div>'
+                                '</div>'
+                                '<div style="flex:1; padding-left: 10px;">'
+                                    '<div class="section-title" style="color: black;">Personality Traits</div>'
+                                    '<div style="text-align:left; padding-left:10px;">'
+                                    + ''.join([
+                                        '<div class="degree-display-group">'
+                                        f'<span class="trait-badge">{item.get("trait", "")}</span>'
+                                        '<span class="degree-label-side">1</span>'
+                                        f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>'
+                                        '<span class="degree-label-side">10</span>'
+                                        '</div>'
+                                        + (
+                                            ''.join([
+                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>'
+                                                for citation in item.get("citations", [])
+                                            ]) if item.get("citations") else ''
+                                        )
+                                        for item in persona.get("personality_traits", [])
+                                    ])
+                                    + '</div>'
+                                '</div>'
+                            '</div>'
+                            '<div style="display:flex; justify-content:space-around; margin-top: 30px;">'
+                                '<div style="flex:1; padding-right: 10px;">'
+                                    '<div class="section-title" style="color: black;">Active Subreddits</div>'
+                                    + ''.join([f'<span class="subreddit-pill">r/{sr}</span>' for sr in persona.get("subreddits_active", [])])
+                                + '</div>'
+                                '<div style="flex:1; padding-left: 10px;">'
+                                    '<div class="section-title" style="color: black;">Sentiment & Tone</div>'
+                                    f'<span class="sentiment-pill">{persona.get("sentiment_tone", "N/A")}</span>'
+                                '</div>'
+                            '</div>'
+                            '</div>'
+                            '<hr class="section-divider">'
+                        ),
+                        unsafe_allow_html=True
+                    )
 
                     # --- Summary Quote ---
                     if persona.get('summary_quote'):
-                        st.markdown(f'<div class="persona-quote">"{persona["summary_quote"]}"</div>', unsafe_allow_html=True)
+                        st.markdown(f'''<div class="persona-quote">"{persona["summary_quote"]}"</div>''', unsafe_allow_html=True)
 
                     # --- Section Blocks with Clear Divisions ---
                     st.markdown('<div class="section-block">', unsafe_allow_html=True)
                     st.markdown('<div class="section-title">Behaviour & Habits</div>', unsafe_allow_html=True)
                     st.markdown("<ul>" + "".join([
                         f"<li>{item.get('habit', '')}" +
-                        ("".join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '') +
+                        ("".join([f'''<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>''' for citation in item.get('citations', [])]) if item.get('citations') else '') +
                         "</li>" for item in persona.get("behaviour_habits", [])
                     ]) + "</ul>", unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -259,7 +275,7 @@ if st.button("Generate Persona"):
                     st.markdown('<div class="section-title">Frustrations</div>', unsafe_allow_html=True)
                     st.markdown("<ul>" + "".join([
                         f"<li>{item.get('frustration', '')}" +
-                        ("".join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '') +
+                        ("".join([f'''<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>''' for citation in item.get('citations', [])]) if item.get('citations') else '') +
                         "</li>" for item in persona.get("frustrations", [])
                     ]) + "</ul>", unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -268,10 +284,26 @@ if st.button("Generate Persona"):
                     st.markdown('<div class="section-title">Goals & Needs</div>', unsafe_allow_html=True)
                     st.markdown("<ul>" + "".join([
                         f"<li>{item.get('goal_need', '')}" +
-                        ("".join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '') +
+                        ("".join([f'''<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>''' for citation in item.get('citations', [])]) if item.get('citations') else '') +
                         "</li>" for item in persona.get("goals_needs", [])
                     ]) + "</ul>", unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
+
+                    # --- Top Comments and Submissions ---
+                    if user_data.get('top_comments'):
+                        st.markdown('<div class="section-block">', unsafe_allow_html=True)
+                        st.markdown('<div class="section-title">Top Comment</div>', unsafe_allow_html=True)
+                        comment = user_data['top_comments'][0]
+                        st.markdown(f"<p><b>r/{comment['subreddit']}</b> (+{comment['score']})</p><blockquote>{comment['body']}</blockquote>", unsafe_allow_html=True)
+                        st.markdown('</div>', unsafe_allow_html=True)
+
+                    if user_data.get('top_submissions'):
+                        st.markdown('<div class="section-block">', unsafe_allow_html=True)
+                        st.markdown('<div class="section-title">Top Submission</div>', unsafe_allow_html=True)
+                        submission = user_data['top_submissions'][0]
+                        st.markdown(f"<p><b>r/{submission['subreddit']}</b> (+{submission['score']})</p><h5>{submission['title']}</h5><blockquote>{submission['selftext']}</blockquote>", unsafe_allow_html=True)
+                        st.markdown('</div>', unsafe_allow_html=True)
+
 
                     st.markdown("---")
                     
@@ -326,3 +358,4 @@ Link Karma: {persona.get('link_karma', 'N/A')}
             st.warning("Please enter a valid Reddit profile URL.")
     else:
         st.warning("Please enter a Reddit profile URL.")
+
