@@ -194,6 +194,7 @@ if st.button("Generate Persona"):
                                     {f'<img src="{persona.get('profile_picture', user_data.get('profile_img', ''))}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid #f8b500;" />' if persona.get('profile_picture') or user_data.get('profile_img') else ''}
                                 </div>
                             </div>
+                            {f'<div class="persona-quote">"{persona["summary_quote"]}"</div>' if persona.get('summary_quote') else ''}
                             <div style="display:flex; justify-content:space-around; margin-top: 30px;">
                                 <div style="flex:1; padding-right: 10px;">
                                     <div class="section-title" style="color: black;">Motivations</div>
