@@ -1,6 +1,7 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from api.people_api import enrich_persona_with_pdl
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -17,33 +18,23 @@ def generate_persona(user_data):
 
     model = genai.GenerativeModel("gemini-2.5-flash")
 
-    prompt = f"""
-    Based on the following Reddit user data, create a detailed user persona in JSON format with these fields:
-    - name: (username or best guess)
-    - age: (estimated or range)
-    - occupation: (likely job or field)
-    - status: (relationship status if possible)
-    - location: (if possible)
-    - personality_traits: (array of objects, each with "trait", "degree" (integer 1-10), and "citations" - 1-3 short, direct quotes from user data that support the trait)
-    - motivations: (array of objects, each with "motivation", "degree" (integer 1-10), and "citations" - 1-3 short, direct quotes from user data that support the motivation)
-    - behaviour_habits: (array of objects, each with "habit" and "citations" - 1-3 short, direct quotes from user data that support the habit)
-    - frustrations: (array of objects, each with "frustration" and "citations" - 1-3 short, direct quotes from user data that support the frustration)
-    - goals_needs: (array of objects, each with "goal_need" and "citations" - 1-3 short, direct quotes from user data that support the goal/need)
-    - summary_quote: (a first-person quote summarizing their approach to Reddit or life)
-    - subreddits_active: (list of most active subreddits)
-    - sentiment_tone: (summary of their typical sentiment/tone)
-    - comment_karma: (from user_data)
-    - link_karma: (from user_data)
+    # Read prompt from file
+    try:
+        script_dir = os.path.dirname(__file__)
+        prompt_file_path = os.path.join(script_dir, "..", "persona_prompt.txt")
+        with open(prompt_file_path, "r") as f:
+            prompt_template = f.read()
+        print(f"[DEBUG] prompt_template content: {prompt_template[:200]}...") # Print first 200 chars
+    except FileNotFoundError:
+        return {"error": "persona_prompt.txt not found."}
 
-    Ensure that for 'personality_traits', 'motivations', 'behaviour_habits', 'frustrations', and 'goals_needs', you provide 1-3 *short, direct quotes* from the user's comments or submissions in the 'citations' array that directly support the description. If no direct quote is available, provide an empty array for citations.
-
-    User Data:
-    - Username: {user_data['username']}
-    - Comment Karma: {user_data['comment_karma']}
-    - Link Karma: {user_data['link_karma']}
-    - Most recent 100 comments: {user_data['comments']}
-    - Most recent 100 submissions: {user_data['submissions']}
-    """
+    prompt = prompt_template.format(
+        username=user_data['username'],
+        comment_karma=user_data['comment_karma'],
+        link_karma=user_data['link_karma'],
+        comments=user_data['comments'],
+        submissions=user_data['submissions']
+    )
 
     try:
         response = model.generate_content(prompt)
@@ -53,6 +44,9 @@ def generate_persona(user_data):
         if json_string.startswith('```json') and json_string.endswith('```'):
             json_string = json_string[len('```json'):-len('```')].strip()
         persona = json.loads(json_string)
-        return persona
+
+        # Enrich persona with People Data Labs API
+        enriched_persona = enrich_persona_with_pdl(persona)
+        return enriched_persona
     except Exception as e:
         return {"error": str(e)}

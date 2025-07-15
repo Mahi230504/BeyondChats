@@ -165,28 +165,34 @@ if st.button("Generate Persona"):
         if username:
             with st.spinner(f"Scraping data for u/{username}..."):
                 user_data = get_user_data(username)
+            
 
             if user_data:
                 st.success(f"Successfully scraped data for u/{username}.")
                 with st.spinner("Generating persona..."):
                     persona = generate_persona(user_data)
 
-                if "error" in persona:
+                if persona and "error" in persona:
                     st.error(f"Error generating persona: {persona['error']}")
-                else:
+                elif persona:
                     # --- Persona Header Card ---
                     st.markdown(f"""
                         <div class="persona-header">
-                            <div style="flex:1;">
-                                <h2 style="margin-bottom:0;">{persona.get('name', username)}</h2>
-                                <table class="info-table">
-                                    <tr><td><strong>Age</strong></td><td>{persona.get('age', 'N/A')}</td></tr>
-                                    <tr><td><strong>Occupation</strong></td><td>{persona.get('occupation', 'N/A')}</td></tr>
-                                    <tr><td><strong>Status</strong></td><td>{persona.get('status', 'N/A')}</td></tr>
-                                    <tr><td><strong>Location</strong></td><td>{persona.get('location', 'N/A')}</td></tr>
-                                    <tr><td><strong>Comment Karma</strong></td><td>{persona.get('comment_karma', 'N/A')}</td></tr>
-                                    <tr><td><strong>Link Karma</strong></td><td>{persona.get('link_karma', 'N/A')}</td></tr>
-                                </table>
+                            <div style="display:flex; align-items:flex-start; gap: 40px;">
+                                <div style="flex:1;">
+                                    <h2 style="margin-bottom:0;">{persona.get('name', username)}</h2>
+                                    <table class="info-table">
+                                        <tr><td><strong>Age</strong></td><td>{persona.get('age', 'N/A')}</td></tr>
+                                        <tr><td><strong>Occupation</strong></td><td>{persona.get('occupation', 'N/A')}</td></tr>
+                                        <tr><td><strong>Status</strong></td><td>{persona.get('status', 'N/A')}</td></tr>
+                                        <tr><td><strong>Location</strong></td><td>{persona.get('location', 'N/A')}</td></tr>
+                                        <tr><td><strong>Comment Karma</strong></td><td>{persona.get('comment_karma', 'N/A')}</td></tr>
+                                        <tr><td><strong>Link Karma</strong></td><td>{persona.get('link_karma', 'N/A')}</td></tr>
+                                    </table>
+                                </div>
+                                <div style="flex-shrink: 0;">
+                                    {f'<img src="{persona.get('profile_picture', user_data.get('profile_img', ''))}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid #f8b500;" />' if persona.get('profile_picture') or user_data.get('profile_img') else ''}
+                                </div>
                             </div>
                             <div style="display:flex; justify-content:space-around; margin-top: 30px;">
                                 <div style="flex:1; padding-right: 10px;">
