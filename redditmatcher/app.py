@@ -58,10 +58,48 @@ st.markdown("""
         font-size: 0.92rem;
         font-weight: 600;
     }
+    .degree-display-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px; /* Small margin between each trait/motivation line */
+    }
+    .degree-label-side {
+        font-size: 0.75rem;
+        color: #555;
+        margin: 0 4px; /* Adjust margin to place labels just outside the scale */
+    }
+    .degree-scale-container {
+        display: inline-block;
+        width: 100px; /* Increased width */
+        height: 12px; /* Slightly increased height for better visibility */
+        background-color: #e0e0e0;
+        border-radius: 6px;
+        overflow: hidden;
+        vertical-align: middle;
+        position: relative;
+    }
+    .degree-scale-fill {
+        height: 100%;
+        background-color: #4CAF50; /* Green color for the fill */
+        border-radius: 6px;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
     .subreddit-pill {
         display: inline-block;
         background: #e6f4ea;
         color: #007f5f;
+        border-radius: 8px;
+        padding: 3px 10px;
+        margin: 2px 4px 2px 0;
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+    .sentiment-pill {
+        display: inline-block;
+        background: #e0f7fa; /* A light blue/cyan for sentiments */
+        color: #006064; /* Darker blue/cyan */
         border-radius: 8px;
         padding: 3px 10px;
         margin: 2px 4px 2px 0;
@@ -139,45 +177,57 @@ if st.button("Generate Persona"):
                     # --- Persona Header Card ---
                     st.markdown(f"""
                         <div class="persona-header">
-                            <div style="display:flex; flex-wrap:wrap; align-items:center;">
-                                <div style="flex:2;">
-                                    <h2 style="margin-bottom:0;">{persona.get('name', username)}</h2>
-                                    <table class="info-table">
-                                        <tr><td><strong>Age</strong></td><td>{persona.get('age', 'N/A')}</td></tr>
-                                        <tr><td><strong>Occupation</strong></td><td>{persona.get('occupation', 'N/A')}</td></tr>
-                                        <tr><td><strong>Status</strong></td><td>{persona.get('status', 'N/A')}</td></tr>
-                                        <tr><td><strong>Location</strong></td><td>{persona.get('location', 'N/A')}</td></tr>
-                                        <tr><td><strong>Comment Karma</strong></td><td>{persona.get('comment_karma', 'N/A')}</td></tr>
-                                        <tr><td><strong>Link Karma</strong></td><td>{persona.get('link_karma', 'N/A')}</td></tr>
-                                    </table>
-                                </div>
-                                <div style="flex:1; text-align:center;">
-                                    <div class="section-title">Personality Traits</div>
+                            <div style="flex:1;">
+                                <h2 style="margin-bottom:0;">{persona.get('name', username)}</h2>
+                                <table class="info-table">
+                                    <tr><td><strong>Age</strong></td><td>{persona.get('age', 'N/A')}</td></tr>
+                                    <tr><td><strong>Occupation</strong></td><td>{persona.get('occupation', 'N/A')}</td></tr>
+                                    <tr><td><strong>Status</strong></td><td>{persona.get('status', 'N/A')}</td></tr>
+                                    <tr><td><strong>Location</strong></td><td>{persona.get('location', 'N/A')}</td></tr>
+                                    <tr><td><strong>Comment Karma</strong></td><td>{persona.get('comment_karma', 'N/A')}</td></tr>
+                                    <tr><td><strong>Link Karma</strong></td><td>{persona.get('link_karma', 'N/A')}</td></tr>
+                                </table>
+                            </div>
+                            <div style="display:flex; justify-content:space-around; margin-top: 30px;">
+                                <div style="flex:1; padding-right: 10px;">
+                                    <div class="section-title" style="color: black;">Motivations</div>
                                     <div style="text-align:left; padding-left:10px;">
-                                    {
-                                        ''.join([
-                                            f'<span class="trait-badge">{item.get("trait", "")}</span>' +
-                                            (''.join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '')
-                                            for item in persona.get("personality_traits", [])
-                                        ])
-                                    }
-                                    </div>
-                                    <div class="section-title">Motivations</div>
-                                    <div style="text-align:left; padding-left:10px;">
-                                    {
-                                        ''.join([
+                                    {''.join([
+                                            f'<div class="degree-display-group">' +
                                             f'<span class="motivation-badge">{item.get("motivation", "")}</span>' +
+                                            f'<span class="degree-label-side">1</span>' +
+                                            f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>' +
+                                            f'<span class="degree-label-side">10</span>' +
+                                            f'</div>' +
                                             (''.join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '')
                                             for item in persona.get("motivations", [])
-                                        ])
-                                    }
+                                        ])}
                                     </div>
                                 </div>
-                                <div style="flex:1; text-align:center;">
-                                    <div class="section-title">Active Subreddits</div>
+                                <div style="flex:1; padding-left: 10px;">
+                                    <div class="section-title" style="color: black;">Personality Traits</div>
+                                    <div style="text-align:left; padding-left:10px;">
+                                    {''.join([
+                                            f'<div class="degree-display-group">' +
+                                            f'<span class="trait-badge">{item.get("trait", "")}</span>' +
+                                            f'<span class="degree-label-side">1</span>' +
+                                            f'<div class="degree-scale-container"><div class="degree-scale-fill" style="width: {item.get("degree", 0) * 10}%;"></div></div>' +
+                                            f'<span class="degree-label-side">10</span>' +
+                                            f'</div>' +
+                                            (''.join([f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>' for citation in item.get('citations', [])]) if item.get('citations') else '')
+                                            for item in persona.get("personality_traits", [])
+                                        ])}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-around; margin-top: 30px;">
+                                <div style="flex:1; padding-right: 10px;">
+                                    <div class="section-title" style="color: black;">Active Subreddits</div>
                                     {''.join([f'<span class="subreddit-pill">r/{sr}</span>' for sr in persona.get("subreddits_active", [])])}
-                                    <div class="section-title">Sentiment & Tone</div>
-                                    <div style="font-size:0.98rem;">{persona.get("sentiment_tone", "N/A")}</div>
+                                </div>
+                                <div style="flex:1; padding-left: 10px;">
+                                    <div class="section-title" style="color: black;">Sentiment & Tone</div>
+                                    <span class="sentiment-pill">{persona.get("sentiment_tone", "N/A")}</span>
                                 </div>
                             </div>
                         </div>

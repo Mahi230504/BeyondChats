@@ -11,6 +11,7 @@ def get_user_data(username):
         "comment_karma": redditor.comment_karma,
         "link_karma": redditor.link_karma,
         "created_utc": redditor.created_utc,
+        "profile_img": redditor.icon_img, # Add profile image URL
         "comments": [],
         "submissions": [],
     }
