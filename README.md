@@ -6,10 +6,11 @@ This application generates a user persona based on a given Reddit profile URL. I
 
 Follow these steps to set up and run the application:
 
-1.  **Navigate to the `redditmatcher` directory:**
+1.  **Clone the git repository and Navigate to the `redditmatcher` directory:**
 
     ```bash
-    cd /Users/mohan/BeyondChats/redditmatcher
+    git clone https://github.com/Mahi230504/BeyondChats.git
+    cd redditmatcher
     ```
 
 2.  **Create a Python Virtual Environment (recommended):**
