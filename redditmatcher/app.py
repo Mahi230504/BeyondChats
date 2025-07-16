@@ -385,6 +385,15 @@ Link Karma: {persona.get('link_karma', 'N/A')}
                         mime="text/plain"
                     )
 
+                    # Save persona to a text file in the current directory
+                    try:
+                        file_path = f"{username}_persona.txt"
+                        with open(file_path, "w", encoding="utf-8") as f:
+                            f.write(persona_text_content)
+                        st.success(f"Persona saved to {file_path}")
+                    except Exception as e:
+                        st.error(f"Error saving persona to file: {e}")
+
                     with st.expander("View Raw Data"):
                         st.json(user_data)
             else:
