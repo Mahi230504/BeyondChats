@@ -28,6 +28,11 @@ def generate_persona(user_data):
     except FileNotFoundError:
         return {"error": "persona_prompt.txt not found."}
 
+    # Escape backslashes and other special characters in user data
+    for key in ['comments', 'submissions', 'top_comments', 'top_submissions']:
+        if key in user_data and isinstance(user_data[key], list):
+            user_data[key] = [str(item).encode('unicode_escape').decode() for item in user_data[key]]
+
     prompt = prompt_template.format(
         username=user_data['username'],
         comment_karma=user_data['comment_karma'],

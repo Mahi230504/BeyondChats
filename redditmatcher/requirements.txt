@@ -3,3 +3,8 @@ python-dotenv
 requests
 praw
 google-generativeai
+scikit-learn
+matplotlib
+nltk
+bertopic
+hdbscan

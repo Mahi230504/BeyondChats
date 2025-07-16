@@ -34,7 +34,7 @@ def enrich_persona_with_pdl(persona: Dict[str, Any]) -> Dict[str, Any]:
     # Extract data from persona to use as search parameters
     params = create_pdl_params(persona)
     
-    if not params:
+    if not params or not params.get("params"):
         print("Insufficient data for PDL enrichment.")
         return persona
     
@@ -121,7 +121,7 @@ def create_pdl_params(persona: Dict[str, Any]) -> Dict[str, Any]:
         params["email"] = persona.get("email")
     
     # Return empty dict if we don't have enough info
-    if len(params) < 2:  # Need at least 2 identifiers for good results
+    if len(params) < 1:  # Need at least 1 identifier for good results
         return {}
     
     # Set required parameters

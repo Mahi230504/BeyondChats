@@ -1,7 +1,13 @@
 import streamlit as st
+import json
 import re
+import matplotlib.pyplot as plt
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
+import html
 from core.reddit_scraper import get_user_data
 from core.persona_generator import generate_persona
+from core.topic_modeling import get_topic_distribution
 
 # --- Custom CSS for Enhanced Section Division and Visuals ---
 st.markdown("""
@@ -173,7 +179,7 @@ if st.button("Generate Persona"):
             if user_data:
                 st.success(f"Successfully scraped data for u/{username}.")
                 with st.spinner("Generating persona..."):
-                    persona = generate_persona(user_data)
+                    persona = generate_persona(user_data.copy())
 
                 if persona and "error" in persona:
                     st.error(f"Error generating persona: {persona['error']}")
@@ -198,7 +204,7 @@ if st.button("Generate Persona"):
                                     '</table>'
                                 '</div>'
                             '</div>'
-                            f'{f"""<div class="persona-quote">"{persona["summary_quote"]}"</div>""" if persona.get("summary_quote") else ""}'
+                            f'{f"""<div class="persona-quote">"{html.escape(persona.get("summary_quote", ""))}"</div>""" if persona.get("summary_quote") else ""}'
                             '<div style="display:flex; justify-content:space-around; margin-top: 30px;">'
                                 '<div style="flex:1; padding-right: 10px;">'
                                     '<div class="section-title" style="color: black;">Motivations</div>'
@@ -212,7 +218,7 @@ if st.button("Generate Persona"):
                                         '</div>'
                                         + (
                                             ''.join([
-                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>'
+                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{html.escape(citation)}"</div>'
                                                 for citation in item.get("citations", [])
                                             ]) if item.get("citations") else ''
                                         )
@@ -232,7 +238,7 @@ if st.button("Generate Persona"):
                                         '</div>'
                                         + (
                                             ''.join([
-                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{citation}"</div>'
+                                                f'<div style="font-size:0.85rem; color:#666; margin-left:10px; font-style:italic;">"{html.escape(citation)}"</div>'
                                                 for citation in item.get("citations", [])
                                             ]) if item.get("citations") else ''
                                         )
@@ -303,6 +309,35 @@ if st.button("Generate Persona"):
                         submission = user_data['top_submissions'][0]
                         st.markdown(f"<p><b>r/{submission['subreddit']}</b> (+{submission['score']})</p><h5>{submission['title']}</h5><blockquote>{submission['selftext']}</blockquote>", unsafe_allow_html=True)
                         st.markdown('</div>', unsafe_allow_html=True)
+                    
+                                        # --- Topic Modeling ---
+                    with st.spinner("Analyzing comment topics..."):
+                        topic_info, topic_distr = get_topic_distribution(user_data['comments'])
+
+                    if topic_info is not None and topic_distr is not None:
+                        st.markdown('<div class="section-block">', unsafe_allow_html=True)
+                        st.markdown('<div class="section-title">Comment Topic Distribution</div>', unsafe_allow_html=True)
+                        
+                        # Create a bar chart
+                        fig, ax = plt.subplots(figsize=(12, 7), dpi=200)
+                        topic_counts = topic_distr['Topic'].value_counts().sort_index()
+                        
+                        # Get topic names from topic_info
+                        topic_names = {row['Topic']: row['Name'] for index, row in topic_info.iterrows()}
+                        
+                        # Map topic IDs to names for plotting
+                        labels = [topic_names.get(t, f"Topic {t}") for t in topic_counts.index]
+
+                        ax.bar(labels, topic_counts.values, width=0.4, color='#f8b500')
+                        ax.set_xlabel("Topic", fontsize=10)
+                        ax.set_ylabel("Number of Comments", fontsize=10)
+                        ax.set_title("Comment Distribution by Topic", fontsize=12)
+                        plt.xticks(rotation=45, ha='right', fontsize=8)
+                        plt.yticks(fontsize=8)
+                        plt.tight_layout(pad=3.0)
+                        st.pyplot(fig)
+
+                        st.markdown('</div>', unsafe_allow_html=True)
 
 
                     st.markdown("---")
@@ -320,10 +355,10 @@ Comment Karma: {persona.get('comment_karma', 'N/A')}
 Link Karma: {persona.get('link_karma', 'N/A')}
 
 --- Personality Traits ---
-{chr(10).join([f'- {item.get('trait', '')}' + (chr(10) + chr(10).join([f'  > "{citation}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('personality_traits', [])])}
+{chr(10).join([f'- {item.get("trait", "")}' + (chr(10) + chr(10).join([f'  > "{html.escape(citation)}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('personality_traits', [])])}
 
 --- Motivations ---
-{chr(10).join([f'- {item.get('motivation', '')}' + (chr(10) + chr(10).join([f'  > "{citation}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('motivations', [])])}
+{chr(10).join([f'- {item.get('motivation', '')}' + (chr(10) + chr(10).join([f'  > "{html.escape(citation)}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('motivations', [])])}
 
 --- Active Subreddits ---
 {', '.join([f'r/{sr}' for sr in persona.get('subreddits_active', [])])}
@@ -332,16 +367,16 @@ Link Karma: {persona.get('link_karma', 'N/A')}
 {persona.get('sentiment_tone', 'N/A')}
 
 --- Summary Quote ---
-"{persona.get('summary_quote', '')}"
+{html.escape(persona.get('summary_quote', ''))}
 
 --- Behaviour & Habits ---
-{chr(10).join([f'- {item.get('habit', '')}' + (chr(10) + chr(10).join([f'  > "{citation}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('behaviour_habits', [])])}
+{chr(10).join([f'- {item.get('habit', '')}' + (chr(10) + chr(10).join([f'  > "{html.escape(citation)}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('behaviour_habits', [])])}
 
 --- Frustrations ---
-{chr(10).join([f'- {item.get('frustration', '')}' + (chr(10) + chr(10).join([f'  > "{citation}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('frustrations', [])])}
+{chr(10).join([f'- {item.get('frustration', '')}' + (chr(10) + chr(10).join([f'  > "{html.escape(citation)}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('frustrations', [])])}
 
 --- Goals & Needs ---
-{chr(10).join([f'- {item.get('goal_need', '')}' + (chr(10) + chr(10).join([f'  > "{citation}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('goals_needs', [])])}
+{chr(10).join([f'- {item.get('goal_need', '')}' + (chr(10) + chr(10).join([f'  > "{html.escape(citation)}"' for citation in item.get('citations', [])]) if item.get('citations') else '') for item in persona.get('goals_needs', [])])}
 """
                     st.download_button(
                         label="Download Persona as Text",
